@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🔭 Exoplanet Detection using Transit Photometry + ML
 
 > Detecting exoplanets from NASA Kepler light curves using classical ML and deep learning.  
@@ -156,3 +157,7 @@ All data is from NASA's publicly available archives:
 ## License
 
 MIT — see [LICENSE](LICENSE)
+=======
+# exoplanet-detection
+Pipeline for detecting exoplanets from NASA Kepler light curves.
+>>>>>>> b9af75cd86cbdf00b87a84844b75449b150c8758
