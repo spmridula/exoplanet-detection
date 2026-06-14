@@ -42,11 +42,11 @@ class TestFeatureExtractor:
             assert np.isfinite(feats[key])
 
     def test_flat_curve_has_no_dips(self):
-    """Flat noisy curve — adaptive threshold should suppress noise peaks."""
-    lc = make_flat_lc(n=500, seed=1)
-    feats = self.fe.extract(lc)
-    # At 4.5x std threshold, Gaussian noise rarely produces significant peaks
-    assert feats["n_dips_detected"] <= 3
+        """Flat noisy curve — adaptive threshold should suppress noise peaks."""
+        lc = make_flat_lc(n=500, seed=1)
+        feats = self.fe.extract(lc)
+        # At 4.5x std threshold, Gaussian noise rarely produces significant peaks
+        assert feats["n_dips_detected"] <= 3
 
     def test_transit_curve_detects_dips(self):
         """Deep, dense transits with low noise should be clearly detected."""
