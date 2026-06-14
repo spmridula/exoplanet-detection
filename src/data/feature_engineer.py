@@ -109,35 +109,43 @@ class FeatureExtractor:
             ),
         }
 
+
     def _peak_stats(self, flux: np.ndarray, time: np.ndarray) -> dict:
         """
         Detects negative peaks (dips) in the light curve using scipy.
-        A real transiting planet produces multiple similar-depth dips.
+        Uses a data-adaptive prominence threshold based on flux std
+        rather than a hardcoded value — handles both raw and preprocessed curves.
         """
-        # Invert flux so dips become peaks
         inverted = -flux
-        # Minimum prominence: dip must be at least 0.0005 (500 ppm) deep
-        peaks, props = find_peaks(inverted, prominence=0.0005, distance=10)
+
+        # Adaptive threshold: 2x the noise level of the curve
+        noise_std = np.std(flux)
+        prominence_threshold = max(4.5 * noise_std, 1e-4)
+
+        # Minimum distance between dips: 5 points (avoids splitting one dip)
+        peaks, props = find_peaks(
+            inverted,
+            prominence=prominence_threshold,
+            distance=5,
+            width=2,           # dip must span at least 2 points
+        )
 
         n_dips = len(peaks)
         if n_dips > 0:
             depths = props["prominences"]
             mean_depth = float(np.mean(depths))
-            std_depth = float(np.std(depths)) if n_dips > 1 else 0.0
-            max_depth = float(np.max(depths))
-
-            # Consistency of dip depths — real planets have similar-depth transits
-            # Eclipsing binaries often show two different depths (primary/secondary)
-            depth_cv = std_depth / mean_depth if mean_depth > 0 else 0.0
+            std_depth  = float(np.std(depths)) if n_dips > 1 else 0.0
+            max_depth  = float(np.max(depths))
+            depth_cv   = std_depth / mean_depth if mean_depth > 0 else 0.0
         else:
             mean_depth = std_depth = max_depth = depth_cv = 0.0
 
         return {
-            "n_dips_detected": float(n_dips),
-            "dip_mean_depth": mean_depth,
-            "dip_depth_std": std_depth,
-            "dip_max_depth": max_depth,
-            "dip_depth_consistency": depth_cv,  # lower = more consistent = more planet-like
+            "n_dips_detected":       float(n_dips),
+            "dip_mean_depth":        mean_depth,
+            "dip_depth_std":         std_depth,
+            "dip_max_depth":         max_depth,
+            "dip_depth_consistency": depth_cv,
         }
 
     def _folded_stats(
